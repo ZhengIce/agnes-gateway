@@ -51,7 +51,7 @@ docker compose ps
 docker compose logs -f agnes-gateway
 ```
 
-管理面板默认地址为 `http://<服务器地址>:8787/admin/`。首次启动后可以在「上游密钥池」页面添加密钥；也可以在启动前准备根目录的 `密钥.txt`，通过临时只读挂载导入：
+管理面板默认地址为 `http://<服务器地址>:8788/admin/`。首次启动后可以在「上游密钥池」页面添加密钥；也可以在启动前准备根目录的 `密钥.txt`，通过临时只读挂载导入：
 
 ```bash
 docker compose run --rm \
@@ -59,12 +59,12 @@ docker compose run --rm \
   agnes-gateway python scripts/import_keys.py
 ```
 
-生产环境建议在前面配置 Nginx 或其他反向代理并启用 HTTPS，不要直接把 `8787` 暴露到公网。更新代码后重新执行 `docker compose up -d --build`；`data/` 目录需要纳入备份。
+生产环境建议在前面配置 Nginx 或其他反向代理并启用 HTTPS，不要直接把 `8788` 暴露到公网。更新代码后重新执行 `docker compose up -d --build`；`data/` 目录需要纳入备份。
 
 ## 对外接入
 
-- **OpenAI 兼容客户端**：Base URL `http://<host>:8787/v1`，API Key 用面板签发的 `ag-` 密钥
-- **Anthropic 兼容客户端**（Claude CLI / Claude Desktop）：Base URL `http://<host>:8787`，同一把 `ag-` 密钥（`/v1/messages` 原生透传）
+- **OpenAI 兼容客户端**：Base URL `http://<host>:8788/v1`，API Key 用面板签发的 `ag-` 密钥
+- **Anthropic 兼容客户端**（Claude CLI / Claude Desktop）：Base URL `http://<host>:8788`，同一把 `ag-` 密钥（`/v1/messages` 原生透传）
 - 客户端**永远不需要** Agnes 的 `sk-` 密钥
 
 ## API 覆盖（文档支持的全部模式）
