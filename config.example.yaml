@@ -1,0 +1,55 @@
+# Agnes Gateway 配置
+# 密钥不在本文件管理：上游 Agnes 密钥存于 data/gateway.db（面板或 import_keys.py 添加），
+# 对外密钥由面板签发。
+
+server:
+  host: "0.0.0.0"
+  port: 8787
+
+# 管理面板 / /admin/api 的访问令牌
+admin_token: "请替换为随机token（如: python -c \"import secrets;print(secrets.token_hex(16))\"）"
+
+upstream:
+  base_url: "https://api.agnes-ai.cn"
+  # 按请求类别的上游读超时（秒）：图像生成可达数十秒到几分钟
+  timeouts: { text: 300, image: 360, video: 120 }
+  # 每 Agnes Key 每 类别 的 RPM 上限（按密钥类型）。来源：Token Plan FAQ（免费档 2026-06-22 下调后）
+  rpm_limits:
+    text:  { free: 10, enterprise: 20, token_plan: 1000 }
+    image: { free: 10, enterprise: 40, token_plan: 100 }   # free: 1K=10 / 2K=5 / 3K,4K=1，取最宽档
+    video: { free: 1, enterprise: 2, token_plan: 5 }
+  cooldown_seconds: 60      # 上游 429 后该 Key 冷却时长
+  max_retries: 3            # 429/5xx/超时时换 Key 重试次数
+  retry_backoff: 0.5        # 重试退避基数（秒），指数增长
+
+# 对外密钥的默认限额（可在面板按 Key 覆盖）
+gateway:
+  default_rpm_limits: { text: 60, image: 20, video: 10 }
+
+# 模型别名：客户端请求别名 → 实际上游模型
+model_aliases: {}
+  # agnes-flash-latest: agnes-3.0-flash
+
+# 故障转移：模型不可用/402/403 时按顺序尝试备选
+failover:
+  agnes-2.5-pro: [agnes-3.0-flash, agnes-2.5-flash]
+
+# 计价（¥）。默认取官方"现价"（限时免费档为 0）；
+# 优惠结束后可改为刊例价：文本 2.5-flash/3.0-flash 输入 0.35 输出 1.00 缓存 0.035；
+# 2.5-pro 输入 3.00 输出 6.00 缓存 0.30；图像 1K 0.07 / 2K 0.12 / 3K 0.14 / 4K 0.16 每张；
+# 视频 720P 0.15 / 1080P,1K 0.25 / 2K 0.35 每秒
+pricing:
+  text:
+    agnes-2.5-pro: { input: 3.0, cached_input: 0.30, output: 6.0 }   # ¥/百万 token（刊例价）
+    agnes-2.5-flash: { input: 0, cached_input: 0, output: 0 }
+    agnes-3.0-flash: { input: 0, cached_input: 0, output: 0 }
+  image:
+    models: [agnes-image-2.0-flash, agnes-image-2.1-flash, agnes-image-2.5-flash]
+    per_image: { "1K": 0, "2K": 0, "3K": 0, "4K": 0 }
+    free_references: 3
+    extra_reference: 0
+  video:
+    models: [agnes-video-2.5, agnes-video-2.5-flash]
+    per_second: { "720P": 0, "1080P": 0, "1K": 0, "2K": 0 }
+    free_images: 5
+    extra_image: 0

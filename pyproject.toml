@@ -1,0 +1,23 @@
+[project]
+name = "agnes-gateway"
+version = "0.1.0"
+description = "Agnes AI 可对外提供服务的 API 网关（Key 池 / 限流 / 计量 / 管理面板）"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "httpx>=0.27",
+    "pyyaml>=6.0",
+    "aiosqlite>=0.20",
+    "python-multipart>=0.0.9",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
