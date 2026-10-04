@@ -40,6 +40,8 @@ cd frontend && npm run build                # 生产构建，FastAPI 自动挂�
 
 镜像使用多阶段构建：先构建 Vue 管理面板，再以 Python 运行 FastAPI。管理员令牌、上游密钥、SQLite 数据和媒体链接不会打进镜像，而是通过宿主机文件和目录挂载。
 
+容器启动时会自动创建并修正 `data/` 挂载目录的所有者，然后以非 root 用户运行 FastAPI。首次部署不需要手动执行 `chown`；请保持 Compose 配置中的默认用户，不要额外指定 `--user agnes`。
+
 ```bash
 # 首次部署
 cp config.example.yaml config.yaml
